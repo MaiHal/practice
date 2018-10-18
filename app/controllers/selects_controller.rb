@@ -1,3 +1,6 @@
+require 'net/http'
+require 'uri'
+require 'json'
 class SelectsController < ApplicationController
     def index
         @menu = Menu.all
@@ -6,15 +9,14 @@ class SelectsController < ApplicationController
         @query = uri.query
 
         # 新しくHTTPセッションを開始し、結果をresponseへ格納
-        response = Net::HTTP.start(uri.host, uri.port) do |http|
-        # 接続時に待つ最大秒数を設定
-        http.open_timeout = 5
-        # 読み込み一回でブロックして良い最大秒数を設定
-        http.read_timeout = 10
-        # ここでWebAPIを叩いている
-        # Net::HTTPResponseのインスタンスが返ってくる
-        http.get(uri.request_uri)
-        end
+        http = Net::HTTP.new(uri.host, uri.port)
+
+        http.use_ssl = true
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+
+        req = Net::HTTP::Post.new(uri.path)
+        
+        response = http.request(req)
         # 例外処理の開始
         begin
         # responseの値に応じて処理を分ける
