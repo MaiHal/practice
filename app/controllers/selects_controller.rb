@@ -3,18 +3,20 @@ class SelectsController < ApplicationController
     require 'uri'
     require 'json'
     require 'pp'
+    require 'mechanize'
+
+    RECIPE_CATEGORY_URL="https://app.rakuten.co.jp/services/api/Recipe/CategoryList/20170426?format=json&categoryType=large&applicationId=1025646104690209174"
 
     def index
         @menu = Menu.all
-        uri = URI.parse("https://app.rakuten.co.jp/services/api/Recipe/CategoryList/20170426?format=json&applicationId=#{ENV['APPLICATION_ID']}")
-        conn = Faraday::Connection.new(:url => uri) do |builder|
-            builder.use Faraday::Request::UrlEncoded
-            builder.use Faraday::Response::Logger
-            builder.use Faraday::Adapter::NetHttp
-        end
+        @categories = recipe_categories['result']['large']
+    end
 
-        res = Faraday.new(:url => "https://app.rakuten.co.jp/services/api/Recipe/CategoryList/20170426?format=json&applicationId=#{ENV['APPLICATION_ID']}").get("&categoryType=large")
-        pp res
+    def recipe_categories
+        agent = Mechanize.new
+        res = agent.get('https://app.rakuten.co.jp/services/api/Recipe/CategoryList/20170426?format=json&categoryType=large&applicationId=1025646104690209174')
+        results = JSON.parse(res.body.force_encoding('UTF-8'))
+        return results
     end
 
     def show

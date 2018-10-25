@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-    def signin
+    def login
     end
 
     def signup
